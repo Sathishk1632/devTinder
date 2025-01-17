@@ -1,0 +1,22 @@
+{
+  "name": "dev-tinder-be",
+  "version": "1.0.0",
+  "description": "devTinder",
+  "keywords": [
+    "nodejs",
+    "js",
+    "mongo"
+  ],
+  "license": "ISC",
+  "author": "Sathish k",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev":"nodemon src/app.js",
+    "start":"node src/app.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
