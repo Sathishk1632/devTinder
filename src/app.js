@@ -1,16 +1,30 @@
-
+const validator=require('validator')
 const express=require('express');
 const app=express();
 const dbConFun=require("./config/database")
 const User=require('./models/user');
+const bcrypt=require('bcrypt')
+const validatesignupdata=require("./utils/validation")
 const port=3000;
 app.use(express.json())
 
 
 app.post("/signup",async (req,res)=>{
-    
-    const user=new User(req.body);
+
+    const{firstName,lastName,emailId,password}=new User(req.body);
     try{
+        //validate signup data 
+        validatesignupdata(req);
+        //encrypt password
+        const hashedPwd=await bcrypt.hash(password,10)
+        
+        const user=new User({
+            firstName,
+            lastName,
+            emailId,
+            password:hashedPwd
+        })
+        
         await user.save();
         res.send("User registered Successfully.....");
     }
@@ -18,6 +32,34 @@ app.post("/signup",async (req,res)=>{
         res.status(400).send("Cannot register user : "+err)
     }
 })
+
+
+app.post("/login",async (req,res)=>{
+    try{
+        const {emailId,password}=req.body;
+        console.log(emailId+"  "+password);
+        
+        if(!validator.isEmail(emailId)){
+            throw new Error("Enter the valid email Id");
+        }
+
+        const user=await User.findOne({emailId:emailId});
+        if(!user){
+            throw new Error("Invalid Credentials")
+        }
+        const ispwdValid=await bcrypt.compare(password,user.password)
+        if(ispwdValid){
+            res.send("Logged in Successfully...")
+        }
+        else{
+            throw new Error("Invalid credentials")
+        }
+    }
+    catch(err){
+        res.status(400).send("Login Unsuccessfull : "+err.message)
+    }
+})
+
 
 app.get("/feed",async (req,res)=>{
     try{

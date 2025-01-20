@@ -1,4 +1,5 @@
 const mongoose=require('mongoose')
+const validator=require('validator')
 function genderValidator(value){
     const allowedGenders = ['male', 'female', 'other']; 
     return allowedGenders.includes(value.toLowerCase());
@@ -14,26 +15,41 @@ const userSchema=mongoose.Schema({
     emailId:{
         type:String,
         required:true,
-        unique:true,
+        unique:[true,"User already exist with this emailId"],
         lowercase:true,
-        match: /\S+@\S+\.\S+/
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Not a valid mailId")
+            }
+
+        }
     },
     password:{
         type:String,
-        required:true
+        required:true,
+        validate(value){
+            if(!validator.isStrongPassword(value)){
+                throw new Error("Please enter the strong password...minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1")
+            }
+        }
     },
     age:{
         type:Number,
         min:[18,"User should be minimum 18 Years old"],
-        required:true
+        
     },
     gender:{
         type:String,
-        required:true,
+       
         validate: { validator: genderValidator, message: 'Gender must be "Male", "Female", or "Other".' }
         },
     photoUrl:{
-        type:String
+        type:String,
+        validate(value){
+            if(!validator.isURL(value)){
+                throw new Error("Enter valid URL")
+            }
+        }
     },
     about:{
         type:String,
