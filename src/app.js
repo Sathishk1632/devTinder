@@ -6,15 +6,15 @@ const User=require('./models/user');
 const port=3000;
 app.use(express.json())
 app.post("/signup",async (req,res)=>{
-    const user=new User(req.body)
+    const user=new User(req.body);
     try{
-         await user.save();
-        res.send("User added successfully....")
+        await user.save();
+        res.send("User saved successfully....")
     }
     catch(err){
-        res.send("Cannot save user...")
+        res.send("Cannot resgister User....")
     }
-   })
+})
 
 dbConFun().
 then(()=>{
