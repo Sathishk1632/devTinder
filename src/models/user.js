@@ -1,5 +1,7 @@
 const mongoose=require('mongoose')
 const validator=require('validator')
+const jwt=require('jsonwebtoken')
+const bcrypt=require('bcrypt')
 function genderValidator(value){
     const allowedGenders = ['male', 'female', 'other']; 
     return allowedGenders.includes(value.toLowerCase());
@@ -59,6 +61,17 @@ const userSchema=mongoose.Schema({
         type:[String]
     }
 },{timestamps:true})
+
+userSchema.methods.getToken=async function(){
+    const token=await jwt.sign({emailId:this.emailId},"SECRETEKEY",{expiresIn:"7d"})
+    return token;
+}
+
+userSchema.methods.validatePassword=async function(passwordInput){
+    const isValid=await bcrypt.compare(passwordInput,this.password)
+    return isValid;
+}
+
 const User=mongoose.model("User",userSchema)
 
 module.exports=User; 

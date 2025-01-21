@@ -3,192 +3,96 @@ const express=require('express');
 const app=express();
 const dbConFun=require("./config/database")
 const User=require('./models/user');
-const bcrypt=require('bcrypt')
-const validatesignupdata=require("./utils/validation")
+const signupdatavalidator=require("./utils/validation")
+const bcrypt=require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwt=require('jsonwebtoken')
+const userAuth=require("./middlewares/auth")
 const port=3000;
 app.use(express.json())
+app.use(cookieParser())
 
-
-app.post("/signup",async (req,res)=>{
-
-    const{firstName,lastName,emailId,password}=new User(req.body);
+app.post("/signup", async (req,res)=>{
     try{
-        //validate signup data 
-        validatesignupdata(req);
-        //encrypt password
-        const hashedPwd=await bcrypt.hash(password,10)
-        
-        const user=new User({
-            firstName,
-            lastName,
-            emailId,
-            password:hashedPwd
-        })
-        
-        await user.save();
-        res.send("User registered Successfully.....");
-    }
-    catch(err){
-        res.status(400).send("Cannot register user : "+err)
-    }
+            const {firstName,lastName,emailId,password}=req.body;
+            //validating inputs
+            signupdatavalidator(req);
+            //encrypting password
+            const hashedpwd=await bcrypt.hash(password,10)
+            console.log(hashedpwd);
+            const user=new User({
+                firstName,
+                lastName,
+                emailId,
+                password:hashedpwd
+            })
+            await user.save()
+            res.send("User registered Successfully...")
+        }
+        catch(err){
+            res.status(400).send("Cannot register user : "+err.message)
+        }
 })
 
 
 app.post("/login",async (req,res)=>{
     try{
-        const {emailId,password}=req.body;
-        console.log(emailId+"  "+password);
-        
-        if(!validator.isEmail(emailId)){
-            throw new Error("Enter the valid email Id");
+            const {emailId,password}=req.body;
+            
+            if(!validator.isEmail(emailId))
+            {
+                throw new Error("Invalid Email id.")
+            }
+           
+            const user=await User.findOne({emailId:emailId});
+            
+            if(!user)
+            {throw new Error("Invalid credentials...") }
+                   
+            else{
+                const ispwdvalid=await user.validatePassword(password);
+                if(!ispwdvalid){
+                    throw new Error("Invalid Credentials...")
+                }
+                else{
+                    const token=await user.getToken();
+                    res.cookie("token",token)
+                    res.send("Logged in Successfully...")
+                }
+            }
         }
-
-        const user=await User.findOne({emailId:emailId});
-        if(!user){
-            throw new Error("Invalid Credentials")
-        }
-        const ispwdValid=await bcrypt.compare(password,user.password)
-        if(ispwdValid){
-            res.send("Logged in Successfully...")
-        }
-        else{
-            throw new Error("Invalid credentials")
-        }
-    }
     catch(err){
         res.status(400).send("Login Unsuccessfull : "+err.message)
+            }
+})
+
+app.get("/profile",userAuth,async (req,res)=>{
+    try {
+        const user=req.user;
+        res.send(user)
+    } catch (error) {
+        res.send("Cannot find details.."+error.message)
     }
 })
 
-
-app.get("/feed",async (req,res)=>{
-    try{
-        const users= await User.find({});
-        if(users.length==0){
-            res.status(404).send("No feed to show...")
-        }
-        else{
-            res.send(users)
-        }
-    }
-    catch(err){
-        res.status(400).send("Cannot load the feed...")
-    }
-})
-
-app.get("/user",async (req,res)=>{
-    const usermail=req.body.emailId;
-    try{
-            const user=await User.find({emailId:usermail})
-           if(user==null || user.length==0){
-            res.status(404).send("No user found for this MailId....")
-           }
-           else{
-            res.send(user);
-           }
-    }
-    catch(err){
-        res.status(400).send("Cannot fetch the users....")
-    }
-})
-
-app.delete("/delete",async (req,res)=>{
-    const id=req.body.id;
-    console.log(id);
-    
-    try{
-        await User.findByIdAndDelete(id);
-        res.send("User Deleted successfully...")
-    }
-    catch(err){
-        res.send("Cannot delete user...")
-    }
-})
-
-app.patch("/update",async (req,res)=>{
-    const id=req.body._id;
-    const user=req.body;
-    try{
-        await User.findByIdAndUpdate({_id:id},user);
-        res.send("User Updated successfully...")
-    }
-    catch(err){
-        res.status(404).send("Cannot update user")
-    }
-})
-
-app.put("/update2",async (req,res)=>{
-    const id=req.body.emailId;
-    const user=req.body;
-    try{
-        await User.findOneAndUpdate({emailId:id},user);
-        res.send("User Updated successfully...")
-    }
-    catch(err){
-        res.status(404).send("Cannot update user")
-    }
-})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// app.post("/signup",async (req,res)=>{
-//     const user=new User(req.body);
-//     try{
-//         await user.save();
-//         res.send("User saved successfully....")
-//     }
-//     catch(err){
-//         res.status(404).send("Cannot resgister User....")
-//     }
-// })
-
-// app.get("/user",async (req,res)=>{
-//     const usermail=req.body.emailId;
-//     try{
-//         const user= await User.find({emailId:usermail});
-//         if(user.length==0){
-//             res.status(404).send("No user found..")
-//         }
-//         else
-//             res.send(user)
-//     }
-//     catch(err){
-//         res.status(404).send(`Cannot load your feed : ${err.message}`)
-//     }
-// })
-
-// app.get("/feed",async (req,res)=>{
-//     try{
-//         const users= await User.find();
-//         res.send(users)
-//     }
-//     catch(err){
-//         res.status(404).send("no users found")
-//     }
+app.post("/sendrequest",userAuth,async (req,res)=>{
+    try {
+        const user=req.user;
+        res.send(`${user.firstName} Sending connection request....`)
+    } catch (error) {
         
-    
+    }
+})
 
-// })
+
+
+
+
+
+
+
+
+
 
 dbConFun().
 then(()=>{
