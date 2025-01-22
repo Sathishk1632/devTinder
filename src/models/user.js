@@ -61,7 +61,7 @@ const userSchema=mongoose.Schema({
         type:[String]
     }
 },{timestamps:true})
-
+userSchema.index({firstName:1,lastName:1})
 userSchema.methods.getToken=async function(){
     const token=await jwt.sign({_id:this._id},"SECRETEKEY",{expiresIn:"7d"})
     return token;

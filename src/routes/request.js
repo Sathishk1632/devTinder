@@ -15,7 +15,10 @@ requestRouter.post("/send/:toId/:status",userAuth,async (req,res)=>{
         if(!allowedStatus.includes(status)){
             throw new Error("Invalid Status....")
         }
-
+        const isUserExist=await User.findById({_id:toUserId});
+        if(!isUserExist){
+            throw new Error("User does not exist...")
+        }
         const connectionRequest=new ConnectionRequestModel({
             fromId:fromUserId,
             toId:toUserId,
