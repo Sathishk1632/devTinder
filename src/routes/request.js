@@ -29,8 +29,13 @@ requestRouter.post("/send/:toId/:status",userAuth,async (req,res)=>{
                             { toId:toUserId,fromId:fromUserId },
                             { toId:fromUserId,fromId:toUserId }
                                                               ]});
-        if(data){
+       
+                                                              
+        if(data && data.status=="INTERESTED"){
             throw new Error("Rquest already exists...")
+        }
+        if(data && data.status=="ACCEPTED"){
+            throw new Error("Already in your Connection..")
         }
         await connectionRequest.save();
         res.send(`Connection request sent...`)
@@ -39,5 +44,33 @@ requestRouter.post("/send/:toId/:status",userAuth,async (req,res)=>{
         res.status(400).send("ERROR : "+err.message)
     }
 })
+requestRouter.post("/review/:status/:reqId",userAuth,async (req,res)=>{
+    try {
+        const {status,reqId}=req.params;
+        const loggedInUser=req.user;
+        
+        const allowedStatus=["ACCEPTED","REJECTED"]
+        if(!allowedStatus.includes(status)){
+            throw new Error("Invalid Status...")
+        }
+        const connectionRequest=await ConnectionRequestModel.findOne(
+            {_id:reqId,
+            toId:loggedInUser._id,
+            status:"INTERESTED"}
+        )
+
+       if(!connectionRequest){
+            throw new Error("No connection request...")
+        }
+        
+        connectionRequest.status=status;
+        await connectionRequest.save();
+        res.send("Connection Request "+status)
+        
+    } catch (err) {
+        res.status(404).send(err.message)
+    }
+})
+
 
 module.exports=requestRouter;
