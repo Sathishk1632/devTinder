@@ -63,7 +63,7 @@ const userSchema=mongoose.Schema({
 },{timestamps:true})
 
 userSchema.methods.getToken=async function(){
-    const token=await jwt.sign({emailId:this.emailId},"SECRETEKEY",{expiresIn:"7d"})
+    const token=await jwt.sign({_id:this._id},"SECRETEKEY",{expiresIn:"7d"})
     return token;
 }
 

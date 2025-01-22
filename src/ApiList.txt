@@ -1,0 +1,18 @@
+#Dev tinder api list
+
+post /signup
+post /login
+post /logout
+
+get   /profile/view
+patch /profile/update
+patch /profile/password
+
+post /requset/interested/:id
+post /request/ignored/:id
+post /request/review/resject/:reqid
+post /request/review/accept/:reqid
+ 
+get /connections
+get /requests/recieved
+get /feed
