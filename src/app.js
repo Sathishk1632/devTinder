@@ -1,14 +1,7 @@
-const validator=require('validator')
 const express=require('express');
 const app=express();
-const route=express.Router();
 const dbConFun=require("./config/database")
-const User=require('./models/user');
-const signupdatavalidator=require("./utils/validation")
-const bcrypt=require('bcrypt');
 const cookieParser = require('cookie-parser');
-const jwt=require('jsonwebtoken')
-const userAuth=require("./middlewares/auth")
 const port=3000;
 app.use(express.json())
 app.use(cookieParser())

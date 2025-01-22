@@ -6,8 +6,9 @@ app.use(cookieParser());
 const User=require('../models/user');
 const validator=require('validator')
 const authRouter=express.Router();
-const signupdatavalidator=require("../utils/validation")
+const {signupdatavalidator}=require("../utils/validation")
 const bcrypt=require('bcrypt');
+const userAuth = require('../middlewares/auth');
 
 authRouter.post("/signup", async (req,res)=>{
     try{
@@ -61,5 +62,15 @@ authRouter.post("/login",async (req,res)=>{
     catch(err){
         res.status(400).send("Login Unsuccessfull : "+err.message)
             }
+})
+
+authRouter.get("/logout",userAuth,(req,res)=>{
+    try {
+        res.cookie("token",null,{expires:new Date()})
+        res.send("Logged out successfully....")
+    } catch (err) {
+        res.cookie("token","")
+        res.send("Logged out Abruptly...."+err.message)
+    }
 })
 module.exports=authRouter;

@@ -16,7 +16,10 @@ const userAuth=async (req,res,next)=>{
     next();
 }
 catch(err){
-    res.status(400).send("Oops Something went wrong...."+err.message)
+    if(err.message=="jwt must be provided"){
+        res.status(400).send("Please login...")
+    }else
+{res.status(400).send("Oops Something went wrong...."+err.message)}
 }
 }
 module.exports=userAuth;
