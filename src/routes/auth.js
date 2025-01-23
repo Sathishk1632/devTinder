@@ -12,7 +12,7 @@ const userAuth = require('../middlewares/auth');
 
 authRouter.post("/signup", async (req,res)=>{
     try{
-            const {firstName,lastName,emailId,password}=req.body;
+            const {firstName,lastName,emailId,password,age,gender}=req.body;
             //validating inputs
             signupdatavalidator(req);
             //encrypting password
@@ -22,7 +22,9 @@ authRouter.post("/signup", async (req,res)=>{
                 firstName,
                 lastName,
                 emailId,
-                password:hashedpwd
+                password:hashedpwd,
+                age,
+                gender
             })
             await user.save()
             res.send("User registered Successfully...")

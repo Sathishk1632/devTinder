@@ -37,8 +37,7 @@ const userSchema=mongoose.Schema({
     },
     age:{
         type:Number,
-        min:[18,"User should be minimum 18 Years old"],
-        
+        min:[18,"User should be minimum 18 Years old"]
     },
     gender:{
         type:String,
