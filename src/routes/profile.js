@@ -27,9 +27,7 @@ profieRouter.patch("/edit",userAuth,async (req,res)=>{
         await user.save();
         //await User.findByIdAndUpdate(user._id,user);
        // res.send("User update successfully....")
-        res.json({
-            message:"Profile updated successfully...",
-            data:{user}
+        res.json({user
         })
     } catch (err) {
         res.status(400).send("Update failed..."+err.message)

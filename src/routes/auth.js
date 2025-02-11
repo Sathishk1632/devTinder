@@ -26,8 +26,10 @@ authRouter.post("/signup", async (req,res)=>{
                 age,
                 gender
             })
-            await user.save()
-            res.send("User registered Successfully...")
+         const result=await user.save();
+         const token=await result.getToken(); 
+        res.cookie("token",token)
+        res.send(result)
         }
         catch(err){
             res.status(400).send("Cannot register user : "+err.message)
@@ -45,7 +47,7 @@ authRouter.post("/login",async (req,res)=>{
             const user=await User.findOne({emailId:emailId});
             
             if(!user)
-            {throw new Error("Invalid credentials...") }
+            {throw new Error("User does not exists.") }
                    
             else{
                 const ispwdvalid=await user.validatePassword(password);
@@ -53,16 +55,14 @@ authRouter.post("/login",async (req,res)=>{
                     throw new Error("Invalid Credentials...")
                 }
                 else{
-                    const token=await user.getToken();
-                   
-                    
+                    const token=await user.getToken(); 
                     res.cookie("token",token)
-                    res.send("Logged in Successfully...")
+                    res.send(user)
                 }
             }
         }
     catch(err){
-        res.status(400).send("Login Unsuccessfull : "+err.message)
+        res.status(400).send(err.message)
             }
 })
 

@@ -10,7 +10,7 @@ userRoute.get("/getRequests/recieved",userAuth,async (req,res)=>{
         const loggedInUser=req.user;
         
         
-        const requests=await ConnectionRequestModel.find({toId:loggedInUser._id,status:"INTERESTED"}).populate("fromId","firstName lastName age");
+        const requests=await ConnectionRequestModel.find({toId:loggedInUser._id,status:"INTERESTED"}).populate("fromId");
         if(!requests||requests.length==0){
             throw new Error("No Connection requests..")
         }
@@ -35,12 +35,13 @@ userRoute.get("/connections",userAuth,async (req,res)=>{
                 ]
             }
         ]
-    }).populate("fromId",allowedPublicData).populate("toId",allowedPublicData);
+    }).populate("fromId").populate("toId");
     
     if(!connections||connections.length==0){
             throw new Error("No Connections established...")
     }
-
+    
+    
     const data=connections.map((row)=>{
         if(row.fromId._id==loggedInUser._id.toString()){
             return row.toId;
@@ -49,8 +50,9 @@ userRoute.get("/connections",userAuth,async (req,res)=>{
             return row.fromId;
         }
     })
-
-    res.json(data)
+    console.log(data);
+    
+    res.send(data)
     } catch (err) {
         res.status(400).send("ERROR : "+err.message)
     }
@@ -76,7 +78,7 @@ userRoute.get("/feed",userAuth,async (req,res)=>{
                 {_id: { $nin :Array.from(hideUsers)}}
                 ,{_id :{$ne :loggedInUser._id}}
             ]
-        }).select("firstName lastName gender age about").skip(skip).limit(limit);
+        }).select("firstName lastName gender age about photoUrl").skip(skip).limit(limit);
         res.send(users)
     } catch (err) {
         res.status(400).send({message:"Error : "+err.message})

@@ -10,6 +10,7 @@ requestRouter.post("/send/:toId/:status",userAuth,async (req,res)=>{
         const fromUserId=req.user._id;
         const toUserId=req.params.toId;
         const status=req.params.status;
+        console.log("lalo : ",status);
         
         const allowedStatus=["INTERESTED","IGNORED"]
         if(!allowedStatus.includes(status)){
@@ -46,8 +47,11 @@ requestRouter.post("/send/:toId/:status",userAuth,async (req,res)=>{
 })
 requestRouter.post("/review/:status/:reqId",userAuth,async (req,res)=>{
     try {
+        
         const {status,reqId}=req.params;
         const loggedInUser=req.user;
+        console.log("Status : ",status);
+        
         
         const allowedStatus=["ACCEPTED","REJECTED"]
         if(!allowedStatus.includes(status)){
