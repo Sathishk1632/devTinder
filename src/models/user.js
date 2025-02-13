@@ -58,6 +58,10 @@ const userSchema=mongoose.Schema({
     },
     skills:{
         type:[String]
+    },
+    profilePic:{
+        data:Buffer,
+        contentType:String
     }
 },{timestamps:true})
 userSchema.index({firstName:1,lastName:1})

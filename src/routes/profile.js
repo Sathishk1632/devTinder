@@ -1,10 +1,13 @@
 const express=require('express')
-const User=require("../models/user")
 const bcrypt=require('bcrypt')
 const profieRouter=express.Router();
 const validator=require('validator')
 const userAuth=require("../middlewares/auth")
 const {validateEditprofildata}=require("../utils/validation")
+
+const cloudinary = require("../utils/cloudinary");
+const upload = require("../middlewares/multer");
+
 
 profieRouter.get("/view",userAuth,async (req,res)=>{
     try {
@@ -15,22 +18,21 @@ profieRouter.get("/view",userAuth,async (req,res)=>{
     }
 })
 
-profieRouter.patch("/edit",userAuth,async (req,res)=>{
+profieRouter.patch("/edit",upload.single('image'),userAuth,async (req,res)=>{
     try {
+        const fileUrl=await cloudinary.uploader.upload(req.file.path, function (err, result){
+                    if(!err) {}})
         if(!validateEditprofildata(req)){
             throw new Error("Something went wrong....")
         }
         const user=req.user;
-        
         Object.keys(req.body).forEach((key)=>(user[key]=req.body[key]))
-        
+        user.photoUrl=fileUrl.url;
         await user.save();
-        //await User.findByIdAndUpdate(user._id,user);
-       // res.send("User update successfully....")
-        res.json({user
-        })
+        res.json(user)
     } catch (err) {
-        res.status(400).send("Update failed..."+err.message)
+        
+        res.status(400).send(err.message)
     }
 })
 profieRouter.patch("/updatePassword",userAuth,async (req,res)=>{
