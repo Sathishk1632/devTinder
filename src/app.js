@@ -16,12 +16,15 @@ app.use(cors({
 const authRouter=require('./routes/auth')
 const profileRouter=require('./routes/profile')
 const requestRouter=require('./routes/request')
-const userRoute=require('./routes/user')
+const userRoute=require('./routes/user');
+const postsRouter = require('./routes/posts');
+
 
 app.use("/auth",authRouter)
 app.use("/profile",profileRouter)
 app.use("/request",requestRouter)
 app.use("/user",userRoute)
+app.use("/posts",postsRouter)
 
 // app.post("/signup", async (req,res)=>{
 //     try{

@@ -72,6 +72,7 @@ userRoute.get("/feed",userAuth,async (req,res)=>{
         limit=limit>20?20:limit;
         const skip=(page-1)*limit;
         const loggedInUser=req.user;
+                                    
         const connections=await ConnectionRequestModel.find({$or :[{fromId:loggedInUser._id},{toId:loggedInUser._id}]});
         
         const hideUsers=new Set();
@@ -94,7 +95,7 @@ userRoute.get("/feed",userAuth,async (req,res)=>{
 
 userRoute.post('/newPost', upload.single('file'),userAuth, async (req, res)=>{
     try {
-        const fileUrl=cloudinary.uploader.upload(req.file.path, function (err, result){
+        const fileUrl=await cloudinary.uploader.upload(req.file.path, function (err, result){
             if(err) {
               return res.status(500).json({
                 success: false,
@@ -102,11 +103,15 @@ userRoute.post('/newPost', upload.single('file'),userAuth, async (req, res)=>{
               })
             }
           })
+          console.log("FileUrl : ",fileUrl.url);
+          
           const post=new Post({
             posterId:req.user._id,
             description:req.body.caption,
             data:fileUrl.url
           })
+          console.log("Post : ",post);
+          
           const savedPost=await post.save();
           res.send(savedPost)
           

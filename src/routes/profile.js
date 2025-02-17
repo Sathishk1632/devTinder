@@ -20,8 +20,14 @@ profieRouter.get("/view",userAuth,async (req,res)=>{
 
 profieRouter.patch("/edit",upload.single('image'),userAuth,async (req,res)=>{
     try {
-        const fileUrl=await cloudinary.uploader.upload(req.file.path, function (err, result){
-                    if(!err) {}})
+        let fileUrl="";
+        if(req.file){
+            fileUrl=await cloudinary.uploader.upload(req.file.path, function (err, result){
+            if(err) {
+                res.send("Image Upload Failed",err);
+            }})}
+            
+        
         if(!validateEditprofildata(req)){
             throw new Error("Something went wrong....")
         }
